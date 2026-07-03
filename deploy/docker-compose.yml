@@ -1,0 +1,54 @@
+# Python Script Manager — one-command Debian 12 deploy
+#
+# Usage:
+#   cp deploy/.env.example .env      # then edit ADMIN_PASSWORD / JWT_SECRET
+#   docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
+#
+# Then open http://<host>:${FRONTEND_PORT:-8080}
+#
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks: [pymanager]
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URL: "mongodb://mongo:27017"
+      DB_NAME: "pymanager"
+      CORS_ORIGINS: "*"
+      WORKSPACE_DIR: "/workspace"
+      PYTHON_BIN: "/usr/local/bin/python3.12"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET must be set}"
+      ADMIN_USERNAME: "${ADMIN_USERNAME:-admin}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}"
+    volumes:
+      # user scripts + logs live on the host so they survive rebuilds
+      - "${HOST_WORKSPACE:-./workspace}:/workspace"
+    networks: [pymanager]
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    networks: [pymanager]
+
+volumes:
+  mongo_data:
+
+networks:
+  pymanager:
+    driver: bridge

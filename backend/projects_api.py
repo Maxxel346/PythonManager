@@ -49,6 +49,11 @@ async def create_project(body: ProjectCreate, request: Request, user=Depends(get
         auto_restart_daily=body.auto_restart_daily,
         daily_restart_hour=body.daily_restart_hour,
         auto_pip_update_daily=body.auto_pip_update_daily,
+        schedule_type=body.schedule_type,
+        cron_expression=body.cron_expression,
+        auto_restart_on_crash=body.auto_restart_on_crash,
+        max_restarts=body.max_restarts,
+        restart_backoff_seconds=body.restart_backoff_seconds,
     )
     doc = project.model_dump()
     await db.projects.insert_one(doc)
@@ -100,7 +105,7 @@ async def start_project_endpoint(project_id: str, request: Request, user=Depends
         raise HTTPException(status_code=400, detail=str(e))
     await db.projects.update_one(
         {"id": project_id},
-        {"$set": {"pid": pid, "status": "running", "last_started_at": _now(), "last_error": None}},
+        {"$set": {"pid": pid, "status": "running", "last_started_at": _now(), "last_error": None, "restart_count": 0}},
     )
     return {"ok": True, "pid": pid}
 
@@ -130,7 +135,7 @@ async def restart_project_endpoint(project_id: str, request: Request, user=Depen
         raise HTTPException(status_code=400, detail=str(e))
     await db.projects.update_one(
         {"id": project_id},
-        {"$set": {"pid": pid, "status": "running", "last_started_at": _now(), "last_error": None}},
+        {"$set": {"pid": pid, "status": "running", "last_started_at": _now(), "last_error": None, "restart_count": 0}},
     )
     return {"ok": True, "pid": pid}
 

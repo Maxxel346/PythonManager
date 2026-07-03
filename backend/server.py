@@ -7,7 +7,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 import os
 import logging
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Request, WebSocket
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -19,6 +19,8 @@ from files_api import router as files_router
 from projects_api import router as projects_router
 import scheduler
 import process_manager as pm
+import crash_watcher
+from ws_logs import ws_logs
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("pymanager")
@@ -81,6 +83,11 @@ app.include_router(files_router)
 app.include_router(projects_router)
 
 
+@app.websocket("/api/ws/logs/{project_id}")
+async def logs_ws(websocket: WebSocket, project_id: str):
+    await ws_logs(websocket, project_id)
+
+
 @app.on_event("startup")
 async def on_startup():
     Path(os.environ["WORKSPACE_DIR"]).mkdir(parents=True, exist_ok=True)
@@ -90,6 +97,7 @@ async def on_startup():
     await seed_admin(db)
     scheduler.init_scheduler(db)
     await scheduler.load_all_schedules()
+    crash_watcher.init_crash_watcher(db)
     logger.info("Python Script Manager started")
 
 

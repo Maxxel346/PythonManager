@@ -57,15 +57,25 @@ def register_project_schedule(project: dict) -> None:
     existing = _scheduler.get_job(jid)
     if existing:
         _scheduler.remove_job(jid)
-    if project.get("auto_restart_daily"):
-        hour = int(project.get("daily_restart_hour") or 3)
-        _scheduler.add_job(
-            _daily_restart_job,
-            trigger=CronTrigger(hour=hour, minute=0),
-            args=[project["id"]],
-            id=jid,
-            replace_existing=True,
-        )
+    schedule_type = project.get("schedule_type") or "daily"
+    if not project.get("auto_restart_daily"):
+        return
+    try:
+        if schedule_type == "cron" and (project.get("cron_expression") or "").strip():
+            trigger = CronTrigger.from_crontab(project["cron_expression"].strip(), timezone="UTC")
+        else:
+            hour = int(project.get("daily_restart_hour") or 3)
+            trigger = CronTrigger(hour=hour, minute=0, timezone="UTC")
+    except Exception as e:
+        log.warning(f"invalid cron for {project.get('name')}: {e}")
+        return
+    _scheduler.add_job(
+        _daily_restart_job,
+        trigger=trigger,
+        args=[project["id"]],
+        id=jid,
+        replace_existing=True,
+    )
 
 
 def unregister_project_schedule(project_id: str) -> None:

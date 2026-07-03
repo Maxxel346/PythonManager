@@ -42,6 +42,8 @@ def project_log_path(project_id: str) -> Path:
 
 # In-memory { project_id -> subprocess.Popen }
 _processes: Dict[str, subprocess.Popen] = {}
+# In-memory { project_id -> start_time_epoch }
+_start_times: Dict[str, float] = {}
 
 
 def is_running(project_id: str, pid: Optional[int]) -> bool:
@@ -174,10 +176,25 @@ def stop_project(project_id: str, pid: Optional[int]) -> bool:
                     pass
     finally:
         _processes.pop(project_id, None)
+        _start_times.pop(project_id, None)
         log = project_log_path(project_id)
         with log.open("a", encoding="utf-8") as lf:
             lf.write(f"\n[{datetime.now(timezone.utc).isoformat()}] === stopped ===\n")
     return True
+
+
+def uptime_seconds(project_id: str) -> float:
+    import time as _time
+    ts = _start_times.get(project_id)
+    if not ts:
+        return 0.0
+    return _time.time() - ts
+
+
+def append_log(project_id: str, message: str) -> None:
+    log = project_log_path(project_id)
+    with log.open("a", encoding="utf-8") as lf:
+        lf.write(message if message.endswith("\n") else message + "\n")
 
 
 def read_log_tail(project_id: str, lines: int = 500) -> str:

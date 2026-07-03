@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 2 testing (P1 auto-restart-on-crash, WebSocket log streaming, P2 arbitrary cron). Backend: 15/15 pytest tests pass. Frontend: all listed flows pass (login, file mgr regression, project register, WS LIVE indicator, live log push without refresh, crash-restart settings persist, cron settings persist, restart-count badge appears). Found & FIXED one critical bug: the /api/ws/logs/{project_id} handler in server.py had no `WebSocket` type annotation on its `websocket` param, causing FastAPI to treat it as a query parameter and reject ALL WebSocket handshakes with HTTP 403 (both with and without token). After annotating and importing `WebSocket` from fastapi, the WS route works end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "None — WebSocket 403 bug fixed by testing agent (server.py: `websocket: WebSocket` annotation). Main agent should verify the two-line change in server.py (import + type annotation) is retained."
+  ],
+  "critical_code_review_comments": [
+    "server.py: fixed missing `WebSocket` type annotation on the ws route handler — without it FastAPI silently rejects every WS handshake with 403 before entering the handler. Consider adding an integration test that connects a real WS on every CI run so future regressions here are caught.",
+    "ws_logs.py: the `_ping_check` uses `await ws.receive_text()` inside `asyncio.wait_for(..., timeout=1.0)`. This works but couples liveness detection to client sending frames. If the client never sends, we still exit the wait_for via TimeoutError each iteration (fine, but produces 1 wakeup/sec per client). Acceptable for now.",
+    "scheduler.register_project_schedule catches invalid cron with `try/except` and just logs a warning — good. But the project still saves with the invalid cron_expression string; a UX improvement would be to reject or validate at create/update time and surface a 400 to the user (currently silently accepted).",
+    "projects_api.start & restart both reset restart_count=0 which matches spec, but a stopped→start via crash-watcher's own restart path also does `$inc restart_count`. Race is possible if a user starts while the watcher is mid-tick, but low impact."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (added WebSocket import + annotation on logs_ws handler)",
+    "/app/backend/tests/backend_test.py (rewrote to cover: crash-restart max exceeded, uptime-reset, cron valid/invalid, WS auth reject 1008, WS log push)"
+  ],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "100% (all listed flows)"},
+  "test_credentials": "admin / admin123 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "All test data created via API/UI is prefixed TESTFE_ or TEST_proj_ and cleaned up in test teardown. No residue after run (verified).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "backend_test.py runs 15 tests in ~1m45s using pytest-xdist (2 workers). Long-running tests: TestCrashRestartMaxExceeded (~40s), TestCrashRestartResetOnStable (~70s). WebSocket tests require `websockets` python lib (already installed v16.0). WSS URL derived from REACT_APP_BACKEND_URL. Note: WebSocket handshake will 403 if the FastAPI route handler is missing `WebSocket` type annotation — this was the previous bug and is now fixed.",
+  "rca of the issue": "BUG: WebSocket /api/ws/logs/{project_id} returned HTTP 403 during handshake regardless of token/project validity. REPRO: `wscat -c 'ws://localhost:8001/api/ws/logs/<id>?token=<valid-jwt>'` → 403. RCA: FastAPI's @app.websocket() decorator uses signature introspection. The handler was declared as `async def logs_ws(websocket, project_id: str)` with no annotation on `websocket`. FastAPI therefore treated `websocket` as a query parameter (default type=str), the dependency graph could not resolve a WebSocket object, so the framework closed the connection with 403 BEFORE calling the handler body (this is why print/log statements added inside ws_logs never fired). FIX: added `from fastapi import WebSocket` import in server.py and annotated the handler as `async def logs_ws(websocket: WebSocket, project_id: str)`. Verified: no-token connections now close with WS 1008 (as spec requires) and valid-token connections receive the log tail + live push. MITIGATION: consider a startup smoke test that opens a WS to catch this class of regression."
+}

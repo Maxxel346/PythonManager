@@ -22,12 +22,21 @@ class Project(BaseModel):
     python_version: str = "3.12"
     args: str = ""  # additional CLI args
     env_vars: List[EnvVar] = Field(default_factory=list)
+    # scheduled restart
     auto_restart_daily: bool = False
     daily_restart_hour: int = 3  # 0-23
     auto_pip_update_daily: bool = False
+    schedule_type: str = "daily"  # "daily" | "cron"
+    cron_expression: str = ""  # e.g. "0 3 * * *" (used when schedule_type == "cron")
+    # crash recovery
+    auto_restart_on_crash: bool = False
+    max_restarts: int = 3  # 0 = unlimited
+    restart_backoff_seconds: int = 5
+    # runtime
     venv_created: bool = False
     pid: Optional[int] = None
     status: str = "stopped"  # stopped | running | errored
+    restart_count: int = 0
     last_started_at: Optional[str] = None
     last_stopped_at: Optional[str] = None
     last_error: Optional[str] = None
@@ -44,6 +53,11 @@ class ProjectCreate(BaseModel):
     auto_restart_daily: bool = False
     daily_restart_hour: int = 3
     auto_pip_update_daily: bool = False
+    schedule_type: str = "daily"
+    cron_expression: str = ""
+    auto_restart_on_crash: bool = False
+    max_restarts: int = 3
+    restart_backoff_seconds: int = 5
 
 
 class ProjectUpdate(BaseModel):
@@ -55,6 +69,11 @@ class ProjectUpdate(BaseModel):
     auto_restart_daily: Optional[bool] = None
     daily_restart_hour: Optional[int] = None
     auto_pip_update_daily: Optional[bool] = None
+    schedule_type: Optional[str] = None
+    cron_expression: Optional[str] = None
+    auto_restart_on_crash: Optional[bool] = None
+    max_restarts: Optional[int] = None
+    restart_backoff_seconds: Optional[int] = None
 
 
 class FileNode(BaseModel):
