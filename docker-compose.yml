@@ -1,0 +1,9 @@
+services:
+  pyscript-manager:
+    build: .
+    container_name: pyscript-manager
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data   # workspace files, per-project venvs, logs, and the project registry
+    restart: unless-stopped

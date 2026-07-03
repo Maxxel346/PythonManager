@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyScript Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">&gt;_</span>
+      <span class="brand-name">PyScript<br>Manager</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="projects">
+        <span class="nav-icon">&#9635;</span> Projects
+      </button>
+      <button class="nav-item" data-view="files">
+        <span class="nav-icon">&#9744;</span> Files
+      </button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="stat-line"><span id="stat-total">0</span> projects</div>
+      <div class="stat-line"><span class="dot dot-run"></span><span id="stat-running">0</span> running</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ===================== PROJECTS VIEW ===================== -->
+    <section id="view-projects" class="view active">
+      <header class="view-header">
+        <h1>Projects</h1>
+        <button class="btn btn-primary" id="btn-new-project">+ New project</button>
+      </header>
+      <div id="projects-empty" class="empty-state hidden">
+        <p>No projects yet.</p>
+        <p class="muted">Upload a folder in <strong>Files</strong>, then create a project pointing at its start script.</p>
+      </div>
+      <div id="projects-grid" class="projects-grid"></div>
+    </section>
+
+    <!-- ===================== FILES VIEW ===================== -->
+    <section id="view-files" class="view">
+      <header class="view-header">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="file-actions">
+          <button class="btn" id="btn-new-folder">New folder</button>
+          <button class="btn" id="btn-upload-files">Upload files</button>
+          <button class="btn" id="btn-upload-folder">Upload folder</button>
+          <button class="btn" id="btn-upload-zip">Upload .zip</button>
+        </div>
+      </header>
+      <div id="dropzone" class="dropzone">
+        <div id="files-empty" class="empty-state hidden">
+          <p>This folder is empty.</p>
+          <p class="muted">Drag &amp; drop files or folders here, or use the buttons above.</p>
+        </div>
+        <table class="file-table" id="file-table">
+          <thead>
+            <tr><th></th><th>Name</th><th>Modified</th><th>Size</th><th></th></tr>
+          </thead>
+          <tbody id="file-tbody"></tbody>
+        </table>
+      </div>
+      <input type="file" id="input-upload-files" multiple hidden>
+      <input type="file" id="input-upload-folder" webkitdirectory directory multiple hidden>
+      <input type="file" id="input-upload-zip" accept=".zip" hidden>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== MODALS ===================== -->
+
+<div class="modal-backdrop" id="modal-backdrop"></div>
+
+<div class="modal" id="modal-new-project">
+  <div class="modal-head"><h2>New project</h2><button class="modal-close" data-close>&times;</button></div>
+  <div class="modal-body">
+    <div class="wizard-steps">
+      <span class="wstep active" data-step="1">1. Root folder</span>
+      <span class="wstep" data-step="2">2. Start script</span>
+      <span class="wstep" data-step="3">3. Settings</span>
+    </div>
+
+    <div class="wpane active" data-pane="1">
+      <p class="field-hint">Pick the folder that contains this script/project (its root directory).</p>
+      <div class="mini-browser" id="np-root-browser"></div>
+      <div class="mini-breadcrumb" id="np-root-breadcrumb"></div>
+      <div class="selected-line">Selected: <code id="np-root-selected">(none — browse into a folder, then click "Use this folder")</code></div>
+      <div class="modal-actions">
+        <button class="btn" id="np-root-use">Use this folder</button>
+      </div>
+    </div>
+
+    <div class="wpane" data-pane="2">
+      <p class="field-hint">Pick the script that should run when this project starts, inside <code id="np-root-echo"></code>.</p>
+      <div class="mini-browser" id="np-script-browser"></div>
+      <div class="selected-line">Selected script: <code id="np-script-selected">(none)</code></div>
+    </div>
+
+    <div class="wpane" data-pane="3">
+      <label class="field">Project name
+        <input type="text" id="np-name" placeholder="e.g. price-scraper">
+      </label>
+      <label class="field">Requirements file
+        <input type="text" id="np-req" value="requirements.txt">
+      </label>
+      <label class="field">Extra CLI args (space separated)
+        <input type="text" id="np-args" placeholder="--flag value">
+      </label>
+      <label class="field">Environment variables (KEY=value, one per line)
+        <textarea id="np-env" rows="3" placeholder="TOKEN=abc123"></textarea>
+      </label>
+      <div class="field-row">
+        <label class="switch-field">
+          <input type="checkbox" id="np-auto-restart">
+          <span>Restart automatically every day at</span>
+          <input type="time" id="np-restart-time" value="03:00">
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="switch-field">
+          <input type="checkbox" id="np-pip-update">
+          <span>Run <code>pip install --upgrade</code> every day at</span>
+          <input type="time" id="np-pip-time" value="03:30">
+        </label>
+      </div>
+    </div>
+
+    <div class="wizard-nav">
+      <button class="btn" id="np-back" disabled>Back</button>
+      <button class="btn btn-primary" id="np-next">Next</button>
+      <button class="btn btn-primary hidden" id="np-create">Create project</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal modal-wide" id="modal-logs">
+  <div class="modal-head">
+    <h2>Logs — <span id="logs-project-name"></span></h2>
+    <button class="modal-close" data-close>&times;</button>
+  </div>
+  <div class="modal-body">
+    <div class="logs-toolbar">
+      <label class="switch-field small"><input type="checkbox" id="logs-autorefresh" checked> Auto-refresh</label>
+      <button class="btn btn-small" id="logs-refresh">Refresh</button>
+      <button class="btn btn-small" id="logs-clear">Clear log</button>
+    </div>
+    <pre class="log-pane" id="log-pane"></pre>
+  </div>
+</div>
+
+<div class="modal" id="modal-edit-project">
+  <div class="modal-head"><h2>Edit — <span id="ep-name-echo"></span></h2><button class="modal-close" data-close>&times;</button></div>
+  <div class="modal-body">
+    <label class="field">Project name
+      <input type="text" id="ep-name">
+    </label>
+    <label class="field">Start script (relative to root)
+      <input type="text" id="ep-script">
+    </label>
+    <label class="field">Requirements file
+      <input type="text" id="ep-req">
+    </label>
+    <label class="field">Extra CLI args (space separated)
+      <input type="text" id="ep-args">
+    </label>
+    <label class="field">Environment variables (KEY=value, one per line)
+      <textarea id="ep-env" rows="3"></textarea>
+    </label>
+    <div class="field-row">
+      <label class="switch-field">
+        <input type="checkbox" id="ep-auto-restart">
+        <span>Restart automatically every day at</span>
+        <input type="time" id="ep-restart-time">
+      </label>
+    </div>
+    <div class="field-row">
+      <label class="switch-field">
+        <input type="checkbox" id="ep-pip-update">
+        <span>Run <code>pip install --upgrade</code> every day at</span>
+        <input type="time" id="ep-pip-time">
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="ep-delete">Delete project</button>
+      <button class="btn btn-primary" id="ep-save">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
