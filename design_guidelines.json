@@ -1,0 +1,145 @@
+{
+  "project_name": "Python Script Manager",
+  "theme": "dark",
+  "archetype": "Swiss & High-Contrast (Terminal Brutalist Variant)",
+  "aesthetic_description": "A dense, high-contrast control panel inspired by developer tools like Portainer and Coolify. The UI prioritizes information density, crisp 1px borders, and a technical feel. It uses a pure dark slate background with stark amber accents reminiscent of classic terminal monitors. Unnecessary padding is reduced in favor of a 'control room' grid layout.",
+  "typography": {
+    "google_fonts_imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@300;400;700;900&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');"
+    ],
+    "families": {
+      "heading": "'Chivo', sans-serif",
+      "body": "'IBM Plex Sans', sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "hierarchy": {
+      "h1": "text-3xl font-bold tracking-tight text-zinc-50 font-heading",
+      "h2": "text-xl font-semibold tracking-tight text-zinc-100 font-heading",
+      "h3": "text-lg font-medium tracking-tight text-zinc-200 font-heading",
+      "body": "text-sm text-zinc-300 font-body leading-relaxed",
+      "code": "text-xs font-mono text-amber-400 bg-zinc-900/50 p-1 rounded border border-zinc-800",
+      "label": "text-xs font-medium uppercase tracking-[0.1em] text-zinc-500 font-body"
+    }
+  },
+  "colors": {
+    "base": {
+      "background": "#09090B",
+      "surface": "#18181B",
+      "surface_hover": "#27272A",
+      "border": "#27272A",
+      "border_focus": "#F59E0B",
+      "divider": "#27272A"
+    },
+    "text": {
+      "primary": "#FAFAFA",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A",
+      "inverse": "#09090B"
+    },
+    "brand": {
+      "primary": "#F59E0B",
+      "primary_hover": "#D97706",
+      "primary_muted": "rgba(245, 158, 11, 0.1)",
+      "accent": "#3B82F6"
+    },
+    "status": {
+      "running": "#10B981",
+      "running_bg": "rgba(16, 185, 129, 0.1)",
+      "stopped": "#71717A",
+      "stopped_bg": "rgba(113, 113, 122, 0.1)",
+      "error": "#EF4444",
+      "error_bg": "rgba(239, 68, 68, 0.1)"
+    }
+  },
+  "layout_and_spacing": {
+    "strategy": "The Control Room Grid",
+    "global_padding": "p-4 md:p-6",
+    "container": "max-w-[1600px] mx-auto w-full",
+    "gap_system": {
+      "tight": "gap-2",
+      "base": "gap-4",
+      "loose": "gap-6"
+    },
+    "border_radius": {
+      "base": "rounded-md",
+      "button": "rounded-md",
+      "card": "rounded-lg",
+      "input": "rounded-md"
+    },
+    "shadows": {
+      "subtle": "shadow-[0_1px_2px_rgba(0,0,0,0.4)]",
+      "glow": "drop-shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+    }
+  },
+  "components_strategy": {
+    "cards": {
+      "style": "bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden",
+      "header": "bg-zinc-950/50 border-b border-zinc-800 px-4 py-3 flex justify-between items-center",
+      "body": "p-4"
+    },
+    "buttons": {
+      "primary": "bg-amber-500 hover:bg-amber-600 text-zinc-950 font-semibold px-4 py-2 rounded-md transition-colors data-[testid]:true",
+      "secondary": "bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 px-4 py-2 rounded-md transition-colors data-[testid]:true",
+      "ghost": "hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 px-3 py-1.5 rounded-md transition-colors data-[testid]:true",
+      "danger": "bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-4 py-2 rounded-md transition-colors data-[testid]:true"
+    },
+    "inputs": {
+      "text": "bg-zinc-950 border border-zinc-800 text-zinc-100 px-3 py-2 rounded-md focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all font-mono text-sm data-[testid]:true",
+      "label": "text-xs font-medium text-zinc-400 mb-1.5 block uppercase tracking-wider"
+    },
+    "tables": {
+      "container": "w-full border-collapse text-sm",
+      "header": "bg-zinc-900 border-b border-zinc-800 text-left text-zinc-400 font-medium uppercase tracking-wider text-xs",
+      "cell": "py-3 px-4 border-b border-zinc-800/50 text-zinc-300 font-body",
+      "row_hover": "hover:bg-zinc-800/50 transition-colors cursor-pointer"
+    },
+    "log_viewer": {
+      "container": "bg-black rounded-lg border border-zinc-800 p-4 font-mono text-xs overflow-auto h-[400px]",
+      "text_standard": "text-zinc-300",
+      "text_error": "text-red-400",
+      "text_success": "text-emerald-400",
+      "text_timestamp": "text-zinc-600 select-none mr-3"
+    },
+    "file_explorer": {
+      "container": "bg-zinc-900 border border-zinc-800 rounded-lg flex flex-col h-full",
+      "toolbar": "bg-zinc-950/80 p-2 border-b border-zinc-800 flex items-center gap-2",
+      "item": "flex items-center gap-2 py-1.5 px-2 hover:bg-zinc-800 rounded cursor-pointer text-sm text-zinc-300 group",
+      "icon_folder": "text-amber-500 w-4 h-4",
+      "icon_file": "text-zinc-400 w-4 h-4",
+      "selected": "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+    },
+    "status_bar": {
+      "wrapper": "fixed bottom-0 left-0 right-0 h-8 bg-zinc-950 border-t border-zinc-800 flex items-center px-4 text-xs font-mono text-zinc-400 z-50",
+      "item": "flex items-center gap-2 mr-6"
+    }
+  },
+  "motion_and_interaction": {
+    "hover_states": "All interactive elements must change color slightly on hover. Rows must highlight. Use `transition-colors duration-150`.",
+    "modals": "Use a heavy backdrop blur (`backdrop-blur-sm bg-black/60`) to focus attention on dialogs.",
+    "toast": "Slide in from bottom-right. Dark background with subtle colored left-border indicating status (Amber for info, Red for error)."
+  },
+  "media": {
+    "images": [
+      {
+        "url": "https://images.pexels.com/photos/13156181/pexels-photo-13156181.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "login_background",
+        "description": "Dark abstract close-up of illuminated geometric metallic shapes. Apply an overlay like bg-black/70 to ensure login form remains perfectly legible."
+      }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "usage": "Use thin stroke widths (strokeWidth={1.5}). Size 16px (w-4 h-4) for standard inline icons, 24px for section headers."
+    }
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure minimum 4.5:1 ratio for text. The Amber accent against Zinc 950 passes this.",
+    "data_testid_rules": "MANDATORY. Every interactive element MUST have a data-testid attribute in kebab-case representing its role. Examples: data-testid='login-submit-button', data-testid='file-tree-item', data-testid='start-project-btn'."
+  },
+  "screen_layouts": {
+    "login": "Split screen or centered card over the geometric background image. Pure utility focus.",
+    "dashboard_shell": "Left vertical navigation (64px wide, icons only) + Main content area + Bottom status bar (32px tall).",
+    "projects_dashboard": "Grid of project cards (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`). Card displays: Name, Status badge, Uptime, CPU/Mem bars, and quick actions (Play/Stop/Restart).",
+    "project_detail": "Bento grid layout. Top row: Status & Actions. Main area: 2-column split. Left: Logs viewer (tall). Right: Environment variables table and Settings switches.",
+    "file_manager": "2-pane layout. Left: Folder tree navigation. Right: Content grid/list with breadcrumb header. Support drag-and-drop file upload overlay."
+  }
+}
