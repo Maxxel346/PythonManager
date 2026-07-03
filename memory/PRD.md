@@ -34,7 +34,12 @@ User choices:
 - APScheduler daily cron per project (UTC hour), does pip upgrade first if configured
 - In-browser code editor (textarea-based, Cmd/Ctrl+S save) for .py/.txt/.json/.yaml/.md/etc
 - Global status bar: CPU/MEM/DISK + python version
-- Full test coverage: 16/16 pytest backend + 13/13 Playwright UI flows
+
+## Iteration 2 (2026-02-03)
+- Auto-restart-on-crash policy (max_restarts + backoff, resets after 60s stable uptime), restart counter surfaced in UI
+- WebSocket-based live log streaming (`/api/ws/logs/{id}`) replacing polling; ws-status LIVE indicator
+- Arbitrary cron expression support (`schedule_type=cron`, `cron_expression="*/30 * * * *"`) alongside the simpler daily-hour mode
+- `deploy/` folder: `docker-compose.yml`, backend + frontend Dockerfiles, nginx config with WS-upgrade headers, `.env.example`, README — single-command deploy on Debian 12: `docker compose -f deploy/docker-compose.yml --env-file .env up -d --build`
 
 ## Deployment (self-hosting on Debian 12)
 1. Install Python 3.12, MongoDB, Node 20
