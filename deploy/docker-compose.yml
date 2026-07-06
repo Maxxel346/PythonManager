@@ -33,6 +33,9 @@ services:
     volumes:
       # user scripts + logs live on the host so they survive rebuilds
       - "${HOST_WORKSPACE:-./workspace}:/workspace"
+    ports:
+      - "8001:8001"
+      - "9000-9999:9000-9999"
     networks: [pymanager]
 
   frontend:
@@ -44,7 +47,6 @@ services:
       - backend
     ports:
       - "${FRONTEND_PORT:-8080}:80"
-      - "9000-9999:9000-9999"
     networks: [pymanager]
 
 volumes:
