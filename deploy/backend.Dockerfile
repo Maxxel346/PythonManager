@@ -6,23 +6,37 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
-# System deps for creating child venvs and healthchecks. We deliberately
-# ship python3.12-venv so `python -m venv` works for user projects.
+# Install unixODBC and prerequisites
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         curl \
         ca-certificates \
         procps \
+        gnupg \
+        apt-transport-https \
+        unixodbc \
+        unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Add Microsoft repository
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+    > /etc/apt/sources.list.d/microsoft-prod.list
+
+# Install Microsoft ODBC Driver 17
+RUN apt-get update && \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql17 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/backend
 
-COPY backend/requirements.txt ./requirements.txt
+COPY backend/requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY backend/ ./
 
-# Workspace where all user scripts live (mounted as volume in compose)
 RUN mkdir -p /workspace /workspace/.logs
 
 EXPOSE 8001
