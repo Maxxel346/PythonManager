@@ -12,7 +12,7 @@ git clone <this repo> pymanager && cd pymanager
 
 # 2. Copy the sample env and edit the two required secrets
 cp deploy/.env.example .env
-$EDITOR .env       # set JWT_SECRET (64-char hex) and ADMIN_PASSWORD
+nano .env       # set JWT_SECRET (64-char hex) and ADMIN_PASSWORD
 
 # 3. Build & start
 docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
