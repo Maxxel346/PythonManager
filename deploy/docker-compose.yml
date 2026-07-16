@@ -13,16 +13,22 @@ services:
     volumes:
       - mongo_data:/data/db
     networks: [pymanager]
+    # UPDATE 1: Expose Mongo to the host so the backend can reach it
+    ports:
+      - "27017:27017" 
 
   backend:
     build:
       context: ..
       dockerfile: deploy/backend.Dockerfile
     restart: unless-stopped
+    # UPDATE 2: Enable host networking and remove the 'networks' and 'ports' sections
+    network_mode: "host" 
     depends_on:
       - mongo
     environment:
-      MONGO_URL: "mongodb://mongo:27017"
+      # UPDATE 3: Point to localhost since backend is now on the host network
+      MONGO_URL: "mongodb://127.0.0.1:27017" 
       DB_NAME: "pymanager"
       CORS_ORIGINS: "*"
       WORKSPACE_DIR: "/workspace"
@@ -33,10 +39,6 @@ services:
     volumes:
       # user scripts + logs live on the host so they survive rebuilds
       - "${HOST_WORKSPACE:-./workspace}:/workspace"
-    ports:
-      - "8001:8001"
-      - "9000-9999:9000-9999"
-    networks: [pymanager]
 
   frontend:
     build:
@@ -48,6 +50,9 @@ services:
     ports:
       - "${FRONTEND_PORT:-8080}:80"
     networks: [pymanager]
+    # UPDATE 4: Allows the frontend container to reach the backend via the host IP
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   mongo_data:
